@@ -19,6 +19,7 @@
         'views/partner_ledger_report_template_pdf.xml',
         'views/partner_ledger_report_detail_template_pdf.xml',
     ],
+    'images': ['static/description/main_screenshot.png'],
     'application': False,
     'installable': True,
     'auto_install': False,
