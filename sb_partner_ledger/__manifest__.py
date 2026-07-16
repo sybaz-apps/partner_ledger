@@ -9,7 +9,7 @@
     'website': "https://sybaz.com.pk/",
     'category': 'Accounting',
     'version': '19.0.1.0.1',
-    'depends': ['account','base_accounting_kit','base_account_budget'],
+    'depends': ['account'],
 
     'data': [
         'security/ir.model.access.csv',

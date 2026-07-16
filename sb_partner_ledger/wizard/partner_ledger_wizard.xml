@@ -35,6 +35,6 @@
               name="Partner Ledger Report"
               sequence="11"
               action="action_partner_ledger_wizard"
-              parent="base_accounting_kit.account_reports_partner"/>
+              parent="account.menu_finance_reports"/>
 
 </odoo>
