@@ -1,0 +1,110 @@
+<odoo>
+    <template id="partner_ledger_report_template">
+        <t t-call="web.html_container">
+			<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0px;">
+				<div>
+					<h2><t t-esc="company_name"/></h2>
+					<h3>Partner Ledger Report</h3>
+					<div class="oe_structure"/>
+					<p>Date From: <t t-esc="disp_start_date"/> <span style="padding-left: 50px;">To:</span> <t t-esc="disp_end_date"/></p>
+					<p>Account Title: <t t-esc="partner_name"/></p>
+				</div>
+				<div>
+					<p>
+						<form name="form_partner_ledger_balances_xls" action="/web/partner_ledger_report" method="post">
+							<input type="hidden" name="report_type" t-att-value="report_type"/>
+							<input type="hidden" name="start_date" t-att-value="start_date"/>
+							<input type="hidden" name="end_date" t-att-value="end_date"/>
+							<input type="hidden" name="display_type" value="xls"/>
+							<input type="hidden" name="partner_id" t-att-value="request.params.get('partner_id', '')"/>
+							<button type="submit" class="btn btn-primary">Export to Excel</button>
+						</form>
+					</p>
+					<p>
+						<form name="form_partner_ledger_balances_pdf" action="/web/partner_ledger_report" method="post">
+							<input type="hidden" name="report_type" t-att-value="report_type"/>
+							<input type="hidden" name="start_date" t-att-value="start_date"/>
+							<input type="hidden" name="end_date" t-att-value="end_date"/>
+							<input type="hidden" name="display_type" value="pdf"/>
+							<input type="hidden" name="partner_id" t-att-value="request.params.get('partner_id', '')"/>
+							<button type="submit" class="btn btn-primary">Export to PDF</button>
+						</form>
+					</p>
+				</div>
+			</div>
+			<table class="table table-striped" style="font-size: 12px;">
+				<thead>
+					<tr>
+						<th>Dated</th>
+						<th>Voucher No</th>
+						<th>Narration</th>
+						<th style="text-align:right;">Debit</th>
+						<th style="text-align:right;">Credit</th>
+						<th style="text-align:right;">Balance</th>
+					</tr>
+				</thead>
+ 				<tbody>
+					<t t-set="gt_debit" t-value="0"/>
+					<t t-set="gt_credit" t-value="0"/>
+					<t t-set="run_balance" t-value="0"/>
+					<tr>
+						<td colspan="2"></td>
+						<td>Opening Balance</td>
+						<td style="text-align:right;"><t t-esc="open_debit" t-options='{"widget": "float", "precision": 2}'/></td>
+						<td style="text-align:right;"><t t-esc="open_credit" t-options='{"widget": "float", "precision": 2}'/></td>
+						<td style="text-align:right;">
+<!--							<t t-esc="open_bal" t-options='{"widget": "float", "precision": 2}'/>-->
+							<t t-if="open_bal &lt; 0">
+								<t t-esc="'({:,.2f})'.format(abs(open_bal))"/>
+							</t>
+							<t t-else="">
+								<t t-esc="'{:,.2f}'.format(open_bal)+ '&#160;&#160;'"/>
+							</t>
+						</td>
+						<t t-set="gt_debit" t-value="gt_debit + open_debit"/>
+						<t t-set="gt_credit" t-value="gt_credit + open_credit"/>
+						<t t-set="run_balance" t-value="run_balance + open_bal"/>
+					</tr>
+					<t t-foreach="data" t-as="line">
+						<tr>
+			                <t t-set="run_balance" t-value="run_balance + line['debit'] - line['credit']"/>
+							<td><t t-esc="line['invdate']"/></td>
+							<td><t t-esc="line['vchno']"/></td>
+							<td><t t-esc="line['narration']"/></td>
+							<td style="text-align:right;"><t t-esc="line['debit']" t-options='{"widget": "float", "precision": 2}'/></td>
+							<td style="text-align:right;"><t t-esc="line['credit']" t-options='{"widget": "float", "precision": 2}'/></td>
+							<td style="text-align:right;">
+<!--								<t t-esc="run_balance" t-options='{"widget": "float", "precision": 2}'/>-->
+								<t t-if="run_balance &lt; 0">
+									<t t-esc="'({:,.2f})'.format(abs(run_balance))"/>
+								</t>
+								<t t-else="">
+									<t t-esc="'{:,.2f}'.format(run_balance)+ '&#160;&#160;'"/>
+								</t>
+							</td>
+			                <t t-set="gt_debit" t-value="gt_debit + line['debit']"/>
+			                <t t-set="gt_credit" t-value="gt_credit + line['credit']"/>
+						</tr>
+					</t>
+				</tbody>
+				<tfoot>
+					<tr>
+						<td colspan="3" style="text-align: right;"><strong>Grand Total</strong></td>
+						<td style="text-align:right;"><strong><t t-esc="gt_debit" t-options='{"widget": "float", "precision": 2}'/></strong></td>
+						<td style="text-align:right;"><strong><t t-esc="gt_credit" t-options='{"widget": "float", "precision": 2}'/></strong></td>
+						<td style="text-align:right;"><strong>
+<!--							<t t-esc="run_balance" t-options='{"widget": "float", "precision": 2}'/>-->
+							<t t-if="run_balance &lt; 0">
+								<t t-esc="'({:,.2f})'.format(abs(run_balance))"/>
+							</t>
+							<t t-else="">
+								<t t-esc="'{:,.2f}'.format(run_balance)+ '&#160;&#160;'"/>
+							</t>
+						</strong></td>
+<!--						<td></td>-->
+					</tr>
+				</tfoot>
+			</table>
+        </t>
+    </template>
+</odoo>

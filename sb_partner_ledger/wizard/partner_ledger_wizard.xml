@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_partner_ledger_wizard" model="ir.ui.view">
+        <field name="name">partner.ledger.wizard.form</field>
+        <field name="model">partner.ledger.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Partner Ledger Wizard">
+                <group>
+                    <field name="start_date"/>
+                    <field name="end_date"/>
+                    <label for="report_type"/>
+                    <div>
+                        <field name="report_type" widget="radio" options="{'horizontal': true}"/>
+                    </div>
+
+                    <field name="partner_id"/>
+                </group>
+                <footer>
+                    <button string="Generate Report" type="object" name="generate_report_htm" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_partner_ledger_wizard" model="ir.actions.act_window">
+        <field name="name">Partner Ledger Report</field>
+        <field name="res_model">partner.ledger.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_partner_ledger_wizard"/>
+        <field name="target">new</field>
+    </record>
+
+    <menuitem id="menu_partner_ledger_custom"
+              name="Partner Ledger Report"
+              sequence="11"
+              action="action_partner_ledger_wizard"
+              parent="base_accounting_kit.account_reports_partner"/>
+
+</odoo>

@@ -1,0 +1,175 @@
+<odoo>
+	<record id="paperformat_partner_ledger_detail" model="report.paperformat">
+		<field name="name">Partner Ledger Detail</field>
+		<field name="format">A4</field>
+		<field name="margin_top">35</field>
+		<field name="header_spacing">35</field>
+		<field name="margin_bottom">10</field>
+	</record>
+	<record id="sb_partner_ledger.action_partner_ledger_report_detail" model="ir.actions.report">
+		<field name="name">Partner Ledger Detail Report</field>
+		<field name="model">account.move</field>
+		<field name="report_type">qweb-pdf</field>
+		<field name="model">account.move</field>
+        <field name="report_name">sb_partner_ledger.partner_ledger_report_detail_pdf</field>
+        <field name="report_file">sb_partner_ledger.partner_ledger_report_detail_pdf</field>
+		<field name="binding_model_id" eval="False"/>
+		<field name="binding_type">report</field>
+		<field name="paperformat_id" ref="sb_partner_ledger.paperformat_partner_ledger_detail"/>
+	</record>
+
+	<template id="partner_ledger_report_detail_pdf" name="Partner Ledger Report Detail">
+        <t t-set="data_report_landscape" t-value="True"/>
+        <t t-set="full_width" t-value="True"/>
+		<t t-call="web.basic_layout">
+			<div class="header" style="text-align: center;">
+				<div><h2 t-esc="company_name"/></div>
+				<div><h3>Partner Ledger Detail Report</h3></div>
+				<div><h5 style="font-weight: bold">Date Range : <t t-esc="'&#160;&#160;&#160;&#160;&#160;&#160;'"/>From<t t-esc="'&#160;&#160;&#160;&#160;&#160;&#160;'"/> <t t-esc="start_date+ '&#160;&#160;&#160;&#160;&#160;&#160;'"/> To <t t-esc="'&#160;&#160;&#160;&#160;&#160;&#160;'+end_date"/></h5></div>
+				<div><h5 style="font-weight: bold">Account Title : <t t-esc="'&#160;&#160;&#160;&#160;&#160;&#160;'+partner_name"/></h5></div>
+			</div>
+            <div class="page">
+                <style>
+                    body, header, footer {
+                    font-family: Arial,Helvetica,sans-serif !important;
+                    font-size: 14px;
+                    line-height: 1.25 !important;
+                    }
+                    table, th, td {
+                        border-collapse: collapse;
+                    }
+
+                    .table th, .table td {
+                        padding: 6px !important;
+                    }
+                </style>
+
+				<table class="table table-bordered">
+					<body>
+<!--						<tr><td t-att-colspan="6"><h2 style="text-align: center;"><t t-esc="company_name"/></h2></td></tr>-->
+<!--						<tr><td t-att-colspan="6"><h3 style="text-align: center;">Partner Ledger Detail Report</h3></td></tr>-->
+<!--						<tr>-->
+<!--							<td t-att-colspan="3">Date From: <t t-esc="start_date"/></td>-->
+<!--							<td t-att-colspan="3">To: <t t-esc="end_date"/></td>-->
+<!--						</tr>-->
+<!--						<tr><td t-att-colspan="6">Account Title: <t t-esc="partner_name"/></td></tr>-->
+						<tr>
+							<th style="text-align: center; border:1px solid black; background-color: #CCCCCC; width: 10%;">Dated</th>
+							<th style="text-align: center; border:1px solid black; background-color: #CCCCCC">Voucher No</th>
+							<th style="text-align: center; border:1px solid black; background-color: #CCCCCC">Narration</th>
+							<th style="text-align: center; border:1px solid black; background-color: #CCCCCC">Qty</th>
+							<th style="text-align: center; border:1px solid black; background-color: #CCCCCC">Rate</th>
+							<th style="text-align: center; border:1px solid black; background-color: #CCCCCC">Debit</th>
+							<th style="text-align: center; border:1px solid black; background-color: #CCCCCC">Credit</th>
+							<th style="text-align: center; border:1px solid black; background-color: #CCCCCC">Balance</th>
+						</tr>
+						<t t-set="row" t-value="1"/>
+						<t t-set="gt_debit" t-value="0"/>
+						<t t-set="gt_credit" t-value="0"/>
+						<t t-set="run_balance" t-value="0"/>
+						<tr>
+							<td colspan="2" style="border:1px solid black;"></td>
+							<td style="border:1px solid black;">Opening Balance</td>
+							<td colspan="2" style="border:1px solid black;"></td>
+							<td style="text-align:right; border:1px solid black;"><t t-esc="open_debit" t-options='{"widget": "float", "precision": 2}'/></td>
+							<td style="text-align:right; border:1px solid black;"><t t-esc="open_credit" t-options='{"widget": "float", "precision": 2}'/></td>
+							<td style="text-align:right; border:1px solid black;">
+<!--								<t t-esc="open_bal" t-options='{"widget": "float", "precision": 2}'/>-->
+								<t t-if="open_bal &lt; 0">
+									<t t-esc="'({:,.2f})'.format(abs(open_bal))"/>
+								</t>
+								<t t-else="">
+									<t t-esc="'{:,.2f}'.format(open_bal)"/>
+								</t>
+							</td>
+							<t t-set="gt_debit" t-value="gt_debit + open_debit"/>
+							<t t-set="gt_credit" t-value="gt_credit + open_credit"/>
+							<t t-set="run_balance" t-value="run_balance + open_bal"/>
+						</tr>
+
+						<t t-foreach="det_data" t-as="line">
+			                <t t-set="run_balance" t-value="run_balance + line['debit'] - line['credit']"/>
+							<t t-if="row % 2 == 0">
+								<tr>
+									<td style="border:1px solid black;"><span t-esc="line['invdate']" /></td>
+									<td style="border:1px solid black;"><span t-esc="line['vchno']" /></td>
+									<td style="border:1px solid black;"><span t-esc="line['narration']" /></td>
+									<t t-if="line['product_name']">
+										<td style="text-align:right; border:1px solid black;"><t t-esc="line['quantity']" t-options='{"widget": "float", "precision": 3}'/></td>
+										<td style="text-align:right; border:1px solid black;"><t t-esc="line['price_unit']" t-options='{"widget": "float", "precision": 2}'/></td>
+										<td style="text-align:right; border:1px solid black;"></td>
+										<td style="text-align:right; border:1px solid black;"></td>
+									</t>
+									<t t-else="">
+										<td style="text-align:right; border:1px solid black;"></td>
+										<td style="text-align:right; border:1px solid black;"></td>
+										<td style="text-align:right; border:1px solid black;"><span t-esc="line['debit']" t-options='{"widget": "float", "precision": 2}' /></td>
+										<td style="text-align:right; border:1px solid black;"><span t-esc="line['credit']" t-options='{"widget": "float", "precision": 2}' /></td>
+									</t>
+									<td style="text-align:right; border:1px solid black;">
+<!--										<span t-esc="run_balance" t-options='{"widget": "float", "precision": 2}' />-->
+										<t t-if="run_balance &lt; 0">
+											<t t-esc="'({:,.2f})'.format(abs(run_balance))"/>
+										</t>
+										<t t-else="">
+											<t t-esc="'{:,.2f}'.format(run_balance)"/>
+										</t>
+									</td>
+								</tr>
+							</t>
+							<t t-else="">
+								<tr>
+									<td style="border:1px solid black; background-color: #CCCCCC"><span t-esc="line['invdate']" /></td>
+									<td style="border:1px solid black; background-color: #CCCCCC"><span t-esc="line['vchno']" /></td>
+									<td style="border:1px solid black; background-color: #CCCCCC"><span t-esc="line['narration']" /></td>
+									<t t-if="line['product_name']">
+										<td style="text-align:right; border:1px solid black; background-color: #CCCCCC"><span t-esc="line['quantity']" t-options='{"widget": "float", "precision": 3}' /></td>
+										<td style="text-align:right; border:1px solid black; background-color: #CCCCCC"><span t-esc="line['price_unit']" t-options='{"widget": "float", "precision": 2}' /></td>
+										<td style="text-align:right; border:1px solid black; background-color: #CCCCCC"></td>
+										<td style="text-align:right; border:1px solid black; background-color: #CCCCCC"></td>
+									</t>
+									<t t-else="">
+										<td style="text-align:right; border:1px solid black; background-color: #CCCCCC"></td>
+										<td style="text-align:right; border:1px solid black; background-color: #CCCCCC"></td>
+										<td style="text-align:right; border:1px solid black; background-color: #CCCCCC"><span t-esc="line['debit']" t-options='{"widget": "float", "precision": 2}' /></td>
+										<td style="text-align:right; border:1px solid black; background-color: #CCCCCC"><span t-esc="line['credit']" t-options='{"widget": "float", "precision": 2}' /></td>
+									</t>
+									<td style="text-align:right; border:1px solid black; background-color: #CCCCCC">
+<!--										<span t-esc="run_balance" t-options='{"widget": "float", "precision": 2}' />-->
+										<t t-if="run_balance &lt; 0">
+											<t t-esc="'({:,.2f})'.format(abs(run_balance))"/>
+										</t>
+										<t t-else="">
+											<t t-esc="'{:,.2f}'.format(run_balance)"/>
+										</t>
+									</td>
+								</tr>
+							</t>
+							<t t-set="row" t-value="row + 1"/>
+			                <t t-set="gt_debit" t-value="gt_debit + line['debit']"/>
+			                <t t-set="gt_credit" t-value="gt_credit + line['credit']"/>
+						</t>
+					</body>
+				<tfoot>
+					<tr>
+						<td colspan="3" style="text-align: right;"><strong>Grand Total</strong></td>
+						<td colspan="2"></td>
+						<td style="text-align:right;"><strong><t t-esc="gt_debit" t-options='{"widget": "float", "precision": 2}'/></strong></td>
+						<td style="text-align:right;"><strong><t t-esc="gt_credit" t-options='{"widget": "float", "precision": 2}'/></strong></td>
+						<td style="text-align:right;"><strong>
+<!--							<t t-esc="run_balance" t-options='{"widget": "float", "precision": 2}'/>-->
+							<t t-if="run_balance &lt; 0">
+								<t t-esc="'({:,.2f})'.format(abs(run_balance))"/>
+							</t>
+							<t t-else="">
+								<t t-esc="'{:,.2f}'.format(run_balance)"/>
+							</t>
+						</strong></td>
+<!--						<td></td>-->
+					</tr>
+				</tfoot>
+				</table>
+			</div>
+		</t>
+	</template>
+</odoo>
