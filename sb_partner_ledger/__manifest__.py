@@ -5,7 +5,7 @@
         Partner Ledger for a specific period and detail with item and quantity 
     """,
     "license": "LGPL-3",
-    'author': "Muhammad Saleem",
+    'author': "Sybaz",
     'website': "https://sybaz.com.pk/",
     'category': 'Accounting',
     'version': '19.0.1.0.1',
@@ -22,6 +22,6 @@
     'application': False,
     'installable': True,
     'auto_install': False,
-    'price': 15,
+    'price': 10,
     'currency': 'USD',
 }
